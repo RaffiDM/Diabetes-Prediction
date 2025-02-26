@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction | Analisis Risiko Diabetes</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container-fluid px-0">
+        <!-- Header -->
+        <header class="bg-primary text-white py-4 text-center mb-4">
+            <div class="container">
+                <h1 class="display-5 fw-bold"><i class="fas fa-heartbeat me-2"></i>Diabetes Risk Predictor</h1>
+                <p class="lead">Analisis risiko diabetes Anda berdasarkan data kesehatan</p>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="row">
+                <!-- Left column - Input form -->
+                <div class="col-lg-7 mb-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-light">
+                            <h3 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Input Data Kesehatan</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="prediction-form" class="needs-validation" novalidate>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="Pregnancies" class="form-label">Jumlah Kehamilan</label>
+                                        <input type="number" class="form-control" id="Pregnancies" name="Pregnancies" min="0" max="20" required>
+                                        <div class="form-text">Jumlah kehamilan yang pernah dialami</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="Glucose" class="form-label">Glukosa (mg/dL)</label>
+                                        <input type="number" class="form-control" id="Glucose" name="Glucose" min="0" max="300" required>
+                                        <div class="form-text">Konsentrasi glukosa plasma 2 jam setelah tes toleransi glukosa oral</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="BloodPressure" class="form-label">Tekanan Darah (mm Hg)</label>
+                                        <input type="number" class="form-control" id="BloodPressure" name="BloodPressure" min="0" max="200" required>
+                                        <div class="form-text">Tekanan darah diastolik (mm Hg)</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="SkinThickness" class="form-label">Ketebalan Kulit (mm)</label>
+                                        <input type="number" class="form-control" id="SkinThickness" name="SkinThickness" min="0" max="100" required>
+                                        <div class="form-text">Ketebalan lipatan kulit trisep (mm)</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="Insulin" class="form-label">Insulin (μU/ml)</label>
+                                        <input type="number" class="form-control" id="Insulin" name="Insulin" min="0" max="1000" required>
+                                        <div class="form-text">Insulin serum 2-Jam (μU/ml)</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="BMI" class="form-label">BMI (kg/m²)</label>
+                                        <input type="number" class="form-control" id="BMI" name="BMI" min="0" max="70" step="0.1" required>
+                                        <div class="form-text">Indeks Massa Tubuh (berat dalam kg/(tinggi dalam m)²)</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="DiabetesPedigreeFunction" class="form-label">Fungsi Silsilah Diabetes</label>
+                                        <input type="number" class="form-control" id="DiabetesPedigreeFunction" name="DiabetesPedigreeFunction" min="0" max="3" step="0.01" required>
+                                        <div class="form-text">Fungsi yang menyatakan kemungkinan diabetes berdasarkan riwayat keluarga</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="Age" class="form-label">Usia (tahun)</label>
+                                        <input type="number" class="form-control" id="Age" name="Age" min="0" max="120" required>
+                                        <div class="form-text">Usia dalam tahun</div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 mt-4">
+                                    <button type="submit" class="btn btn-primary btn-lg" id="predict-btn">
+                                        <i class="fas fa-calculator me-2"></i>Prediksi Risiko Diabetes
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right column - Results and info -->
+                <div class="col-lg-5">
+                    <!-- Results card -->
+                    <div class="card shadow mb-4" id="result-card" style="display: none;">
+                        <div class="card-header bg-light">
+                            <h3 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Hasil Prediksi</h3>
+                        </div>
+                        <div class="card-body text-center">
+                            <div id="result-animation" class="my-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            <div id="result-content" style="display: none;">
+                                <div id="gauge-chart" class="mb-3" style="height: 200px;"></div>
+                                <h4 class="mt-4" id="result-message"></h4>
+                                <p class="lead" id="result-probability"></p>
+                                <div class="alert mt-3" id="result-alert" role="alert"></div>
+                                <div class="d-grid gap-2 mt-4">
+                                    <button class="btn btn-outline-primary" id="reset-btn">
+                                        <i class="fas fa-redo me-2"></i>Ulangi Prediksi
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Information card -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-light">
+                            <h3 class="mb-0"><i class="fas fa-info-circle me-2"></i>Tentang Prediksi Diabetes</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Aplikasi ini menggunakan machine learning untuk memprediksi risiko diabetes berdasarkan data medis Anda. Model dilatih menggunakan dataset Pima Indians Diabetes Database.</p>
+                            
+                            <h5 class="mt-4">Cara Menggunakan:</h5>
+                            <ol>
+                                <li>Isi semua informasi kesehatan pada form di sebelah kiri</li>
+                                <li>Klik tombol "Prediksi Risiko Diabetes"</li>
+                                <li>Lihat hasil prediksi risiko diabetes Anda</li>
+                            </ol>
+                            
+                            <div class="alert alert-warning mt-3">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Perhatian:</strong> Aplikasi ini tidak menggantikan diagnosis medis profesional. Selalu konsultasikan dengan dokter Anda untuk penilaian medis yang akurat.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-dark text-white py-4 mt-5">
+            <div class="container text-center">
+                <p>© 2025 Diabetes Risk Predictor | Dibuat untuk Kesehatan Anda</p>
+                <p class="small">Aplikasi ini merupakan alat bantu dan tidak menggantikan konsultasi medis profesional</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.0/echarts.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
